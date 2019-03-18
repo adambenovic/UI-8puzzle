@@ -29,7 +29,7 @@ public class GreedyBestFirstSearch {
             statesQueue = new LinkedList<>();
             current = null;
             ArrayList<Puzzle> currentNextStates = new ArrayList<>();
-            boolean isSolution = false, visited = false;
+            boolean isSolution = false, visited = false, alreadyVisited = false;
             statesQueue.offer(start);
             startTime = System.nanoTime();
 
@@ -41,6 +41,19 @@ public class GreedyBestFirstSearch {
                     System.out.println("is it solutio yet?");
                     isSolution = true;
                     break;
+                }
+
+                for (Puzzle stateVisited : statesVisited) {
+                    if(Arrays.equals(current.getMap(), stateVisited.getMap())) {
+                        alreadyVisited = true;
+                        break;
+                    }
+                    alreadyVisited = false;
+                }
+
+                if(alreadyVisited) {
+                    statesQueue.remove(current);
+                    continue;
                 }
 
                 currentNextStates = current.generateNextStates(heuristic, finish);

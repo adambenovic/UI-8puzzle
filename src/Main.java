@@ -1,5 +1,6 @@
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Main class of solver solution
@@ -21,6 +22,7 @@ public class Main {
         ArrayList<Puzzle> finishes = io.loadFromFile(finishFile);
         ArrayList<ArrayList<Puzzle>> solutions = new ArrayList<>();
         GreedyBestFirstSearch solver = null;
+
         switch(heuristic)
         {
             case "1":
