@@ -12,25 +12,25 @@ public class Main {
     public static void main(String[] args) {
         Main solver = new Main();
 
-        solver.run(args[0], args[1], args[2]);
+        solver.run(args[0], args[1], args[2], args[3]);
     }
 
-    public void run(String startFile, String finishFile, String heuristic)
+    public void run(String startFile, String finishFile, String solutionFile, String heuristic)
     {
         IO io = new IO();
         ArrayList<Puzzle> starts = io.loadFromFile(startFile);
         ArrayList<Puzzle> finishes = io.loadFromFile(finishFile);
-        ArrayList<ArrayList<Puzzle>> solutions = new ArrayList<>();
+        ArrayList<Solution> solutions;
         GreedyBestFirstSearch solver = null;
 
         switch(heuristic)
         {
             case "1":
-                //call the displaced tiles heuristic
+                //set heuristic to Displaced tiles
                 solver = new GreedyBestFirstSearch(new DisplacedHeuristic());
                 break;
             case "2":
-                //call the manhattan heuristic
+                //set heuristic to Manhattan
                 solver = new GreedyBestFirstSearch(new ManhattanHeuristic());
                 break;
             default:
@@ -41,7 +41,7 @@ public class Main {
         }
 
         solutions = solver.solve(starts, finishes);
-        io.writeToFile(solutions);
+        io.writeToFile(solutions, solutionFile);
     }
 }
 

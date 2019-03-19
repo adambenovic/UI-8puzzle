@@ -1,3 +1,4 @@
+import javax.swing.plaf.synth.SynthTextAreaUI;
 import java.util.ArrayList;
 
 public class Puzzle {
@@ -20,70 +21,79 @@ public class Puzzle {
     public Puzzle(Puzzle previous, String operator) {
         this.height = previous.getHeight();
         this.width = previous.getWidth();
-        this.map = previous.getMap();
         this.zeroRow = previous.getZeroRow();
         this.zeroColumn = previous.getZeroColumn();
         this.previous = previous;
         this.lastOperator = operator;
         this.next = null;
+        this.map = new int[this.height][this.width];
+        for(int i = 0; i < this.height; i++) {
+            for(int j = 0; j < this.width; j++)
+                this.map[i][j] = previous.getMap()[i][j];
+        }
     }
 
     public ArrayList<Puzzle> generateNextStates(IHeuristic heuristic, Puzzle finish) {
-        Puzzle generated;
+        Puzzle up, left, right, down;
+
         this.next = new ArrayList<>();
 
-        generated = new Puzzle(this, "up");
-        if (generated.move("up")) {
-            generated.setPriceToFinish(heuristic.calculate(generated, finish));
-            this.next.add(generated);
+        up = new Puzzle(this, "up");
+        if (up.move(Enum.UP)) {
+            up.setPriceToFinish(heuristic.calculate(up, finish));
+            this.next.add(up);
         }
 
-        generated = new Puzzle(this, "left");
-        if (generated.move("left")) {
-            generated.setPriceToFinish(heuristic.calculate(generated, finish));
-            this.next.add(generated);
+        left = new Puzzle(this, "left");
+        if (left.move(Enum.LEFT)) {
+            left.setPriceToFinish(heuristic.calculate(left, finish));
+            this.next.add(left);
         }
 
-        generated = new Puzzle(this, "right");
-        if (generated.move("right")) {
-            generated.setPriceToFinish(heuristic.calculate(generated, finish));
-            this.next.add(generated);
+        right = new Puzzle(this, "right");
+        if (right.move(Enum.RIGHT)) {
+            right.setPriceToFinish(heuristic.calculate(right, finish));
+            this.next.add(right);
         }
 
-        generated = new Puzzle(this, "down");
-        if (generated.move("down")) {
-            generated.setPriceToFinish(heuristic.calculate(generated, finish));
-            this.next.add(generated);
+        down = new Puzzle(this, "down");
+        if (down.move(Enum.DOWN)) {
+            down.setPriceToFinish(heuristic.calculate(down, finish));
+            this.next.add(down);
         }
 
         return this.next;
     }
 
-    private boolean move(String direction) {
+    private boolean move(int direction) {
         boolean success = false;
 
         switch (direction) {
-            case "up":
+            case Enum.UP:
                 if(zeroRow - 1 >= 0) {
                     swapMapValues(zeroRow, zeroColumn, zeroRow - 1, zeroColumn);
+                    zeroRow = zeroRow - 1;
                     success = true;
                 }
                 break;
-            case "left":
+            case Enum.LEFT:
                 if(zeroColumn - 1 >= 0) {
                     swapMapValues(zeroRow, zeroColumn, zeroRow, zeroColumn - 1);
+                    zeroColumn = zeroColumn - 1;
                     success = true;
                 }
                 break;
-            case "right":
-                if(zeroColumn + 1 < this.width) {
+            case Enum.RIGHT:
+                if(zeroColumn + 1 < width) {
                     swapMapValues(zeroRow, zeroColumn, zeroRow, zeroColumn + 1);
+                    zeroColumn = zeroColumn + 1;
                     success = true;
                 }
                 break;
-            case "down":
-                if(zeroRow + 1 < this.height) {
+            case Enum.DOWN:
+                if(zeroRow + 1 < height) {
                     swapMapValues(zeroRow, zeroColumn, zeroRow + 1, zeroColumn);
+                    zeroRow = zeroRow + 1;
                     success = true;
                 }
                 break;
@@ -96,10 +106,31 @@ public class Puzzle {
         return success;
     }
 
+    public boolean isEqual(Puzzle b) {
+        boolean equals = true;
+        for (int i = 0; i < height; i++) {
+            for(int j = 0; j < width; j++) {
+                if(map[i][j] != b.getMap()[i][j])
+                    equals = false;
+            }
+        }
+
+        return equals;
+    }
+
     private void swapMapValues(int rowA, int columnA, int rowB, int columnB) {
         int tmp = map[rowA][columnA];
         map[rowA][columnA] = map[rowB][columnB];
         map[rowB][columnB] = tmp;
+    }
+
+    public void printMap() {
+        for(int i = 0; i < height; i++) {
+            for(int j = 0; j < width; j++) {
+                System.out.print(map[i][j]);
+            }
+            System.out.println();
+        }
     }
 
     public int getHeight() {

@@ -49,11 +49,8 @@ class IO {
         ArrayList<String> rows = new ArrayList<>();
         ArrayList<ArrayList<Integer>> map = new ArrayList<>();
 
-        while (matcher.find()) {
+        while (matcher.find())
             rows.add(matcher.group(0));
-            System.out.print("Found:");
-            System.out.println(rows.get(rows.size()-1));
-        }
 
         for(int i = 0; i < rows.size(); i++) {
             matcher = Pattern.compile("([0-9]+|[m])").matcher(rows.get(i));
@@ -110,44 +107,54 @@ class IO {
         }
     }
 
-    public void writeToFile(ArrayList<ArrayList<Puzzle>> solutions) {
+    public void writeToFile(ArrayList<Solution> solutions, String filename) {
         if(solutions.isEmpty()) {
-            System.out.println("Solution not found.");
+            System.out.println("No solutions found.");
             System.exit(Enum.EXIT_SOLUTION_NONE);
         }
 
-        ArrayList<ArrayList<String>> lines = solutionsToStrings(solutions);
-
-        String filename = "solution.txt";
+        BufferedWriter writer = null;
 
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(filename));
-
-            try {
-                for(int i = 0; i < lines.size(); i++) {
-
-                    writer.write(lines.get(i) + "\n");
-
-                }
-            }
-            catch (IOException e)
-            {
-                System.out.println( "Unable to write to " + filename + ".");
-                System.exit(Enum.EXIT_WRITE_EXCEPTION);
-            }
+            writer = new BufferedWriter(new FileWriter(filename));
         }
         catch (IOException e)
         {
             System.out.println( "Unable to open " + filename + " for writing.");
             System.exit(Enum.EXIT_WRITE_EXCEPTION);
         }
+
+        ArrayList<ArrayList<String>> lines = solutionsToStrings(solutions);
+
+        try {
+            for(int i = 0; i < lines.size(); i++) {
+                writer.write("Solution no." + (i+1) +":\n");
+                for (int j = 0; j < lines.get(i).size(); j++) {
+                    writer.write("Step no." + (j + 1) + ": " + lines.get(i).get(j) + "\n");
+                }
+                writer.write("Run time = " + solutions.get(i).getRunTime() + "ms\n\n");
+            }
+        } catch (IOException e)
+        {
+            System.out.println( "Unable to write to " + filename + ".");
+            System.exit(Enum.EXIT_WRITE_EXCEPTION);
+        }
+
+        try {
+            writer.close();
+        } catch (IOException e) {
+            System.out.println( "Unable to close " + filename + ".");
+            System.exit(Enum.EXIT_FILE_CLOSE);
+        }
+
     }
 
-    private ArrayList<ArrayList<String>> solutionsToStrings(ArrayList<ArrayList<Puzzle>> solutions) {
-        ArrayList<ArrayList<String>> result = new ArrayList<>();
-        for (ArrayList<Puzzle> solution : solutions) {
+    private ArrayList<ArrayList<String>> solutionsToStrings(ArrayList<Solution> solutions) {
+       ArrayList<ArrayList<String>> result = new ArrayList<>();
+
+        for (Solution solution : solutions) {
             ArrayList<String> stateString = new ArrayList<>();
-            for (Puzzle state : solution) {
+            for (Puzzle state : solution.getStates()) {
                 StringBuilder line = new StringBuilder();
                 line.append("(");
                 for(int i = 0; i < state.getHeight(); i++){
@@ -173,6 +180,7 @@ class IO {
             }
             result.add(stateString);
         }
+
         return result;
     }
 }

@@ -1,20 +1,15 @@
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 
-public class GreedyBestFirstSearch {
+public class GreedyBestFirstSearch implements ISolver {
     private IHeuristic heuristic;
 
     public GreedyBestFirstSearch(IHeuristic heuristic) {
         this.heuristic = heuristic;
     }
 
-    public IHeuristic getHeuristic() {
-        return heuristic;
-    }
-
-    public ArrayList<ArrayList<Puzzle>> solve(ArrayList<Puzzle> starts, ArrayList<Puzzle> finishes) {
-        ArrayList<ArrayList<Puzzle>> solutions = new ArrayList<>();
+    public ArrayList<Solution> solve(ArrayList<Puzzle> starts, ArrayList<Puzzle> finishes) {
+        ArrayList<Solution> solutions = new ArrayList<>();
         ArrayList<Puzzle> statesVisited;
         LinkedList<Puzzle> statesQueue;
         Puzzle start, finish, current;
@@ -24,36 +19,20 @@ public class GreedyBestFirstSearch {
             start = starts.get(i);
             finish = finishes.get(i);
             start.setPriceToFinish(heuristic.calculate(start, finish));
-            System.out.println(start.getPriceToFinish());
             statesVisited = new ArrayList<>();
             statesQueue = new LinkedList<>();
             current = null;
-            ArrayList<Puzzle> currentNextStates = new ArrayList<>();
-            boolean isSolution = false, visited = false, alreadyVisited = false;
+            ArrayList<Puzzle> currentNextStates ;
             statesQueue.offer(start);
             startTime = System.nanoTime();
+            boolean isSolution = false, visited, solvable = this.isSolvable(start);
 
-            while(!statesQueue.isEmpty()) {
-                System.out.println("how many times do we get here");
+            while(!statesQueue.isEmpty() && solvable) {
                 current = statesQueue.poll();
 
-                if(Arrays.equals(current.getMap(), finish.getMap())) {
-                    System.out.println("is it solutio yet?");
+                if(current.isEqual(finish)) {
                     isSolution = true;
                     break;
-                }
-
-                for (Puzzle stateVisited : statesVisited) {
-                    if(Arrays.equals(current.getMap(), stateVisited.getMap())) {
-                        alreadyVisited = true;
-                        break;
-                    }
-                    alreadyVisited = false;
-                }
-
-                if(alreadyVisited) {
-                    statesQueue.remove(current);
-                    continue;
                 }
 
                 currentNextStates = current.generateNextStates(heuristic, finish);
@@ -62,8 +41,15 @@ public class GreedyBestFirstSearch {
                     Puzzle nextState = currentNextStates.get(j);
                     visited = false;
 
-                    for(Puzzle temp : statesQueue) {
-                        if(Arrays.equals(nextState.getMap(), temp.getMap())) {
+                    for(Puzzle temp : statesVisited) {
+                        if(nextState.isEqual(temp)) {
+                            visited = true;
+                            break;
+                        }
+                    }
+
+                    for (Puzzle temp : statesQueue) {
+                        if (nextState.isEqual(temp)) {
                             visited = true;
                             break;
                         }
@@ -87,27 +73,27 @@ public class GreedyBestFirstSearch {
                 statesVisited.add(current);
                 statesQueue.remove(current);
             }
+
             finishTime = System.nanoTime();
-            startTime = (finishTime - startTime) / 1000000;
 
             if(isSolution) {
                 boolean isPath = false;
-                ArrayList<Puzzle> solution = new ArrayList<>();
-                solution.add(current);
+                Solution solution = new Solution();
+                solution.getStates().add(current);
 
                 while(!isPath) {
-                    System.out.println("we are here");
                     current = current.getPrevious();
-                    solution.add(0, current);
-                    if(Arrays.equals(start.getMap(), current.getMap()))
+                    solution.getStates().add(0, current);
+                    if(start.isEqual(current))
                         isPath = true;
                 }
-                System.out.println("Solution no." + i + " found.");
-                System.out.println("Duration: " + startTime + "ms");
+                solution.setTimes(startTime, finishTime);
+                System.out.print("Solution no." + (i+1) + " found.");
+                System.out.println(" Duration: " + solution.getRunTime() + "ms");
                 solutions.add(solution);
             }
             else {
-                System.out.println("Solution for puzzle no." + i + " was not found");
+                System.out.println("Solution for puzzle no." + (i + 1) + " does not exist");
             }
         }
 
@@ -115,7 +101,18 @@ public class GreedyBestFirstSearch {
         return solutions;
     }
 
-    public void setHeuristic(IHeuristic heuristic) {
-        this.heuristic = heuristic;
+    public boolean isSolvable(Puzzle puzzle) {
+        int count = 0, height = puzzle.getHeight(), width = puzzle.getWidth();
+
+        if(width != height)
+            return true;
+
+        int[][] map = puzzle.getMap();
+        for (int i = 0; i < height; i++)
+            for (int j = i + 1; j < width; j++)
+                if (map[j][i] != 0 && map[j][i] > map[i][j])
+                    count++;
+
+        return (count % 2 == 0);
     }
 }

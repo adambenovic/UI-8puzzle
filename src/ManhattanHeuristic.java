@@ -4,6 +4,8 @@ public class ManhattanHeuristic implements IHeuristic {
         int result = 0;
         for(int i = 0; i < current.getHeight(); i++) {
             for(int j = 0; j < current.getWidth(); j++) {
+                if(current.getMap()[i][j] == 0)
+                    continue;
                 int[] inFinish = findValue(current.getMap()[i][j], finish);
                 result += Math.abs(inFinish[0] - i) + Math.abs(inFinish[1] - j);
             }
