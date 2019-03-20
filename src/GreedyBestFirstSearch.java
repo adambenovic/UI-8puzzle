@@ -25,7 +25,10 @@ public class GreedyBestFirstSearch implements ISolver {
             ArrayList<Puzzle> currentNextStates ;
             statesQueue.offer(start);
             startTime = System.nanoTime();
-            boolean isSolution = false, visited, solvable = this.isSolvable(start);
+            boolean isSolution = false, visited,
+                    solvable = this.isSolvable(start);
+            long fact = factorial((start.getHeight() * start.getWidth()));
+            System.out.println(fact);
 
             while(!statesQueue.isEmpty() && solvable) {
                 current = statesQueue.poll();
@@ -72,6 +75,12 @@ public class GreedyBestFirstSearch implements ISolver {
 
                 statesVisited.add(current);
                 statesQueue.remove(current);
+
+                    System.out.println(statesVisited.size());
+                if(statesVisited.size() >= fact){
+                    isSolution = false;
+                    break;
+                }
             }
 
             finishTime = System.nanoTime();
@@ -114,5 +123,12 @@ public class GreedyBestFirstSearch implements ISolver {
                     count++;
 
         return (count % 2 == 0);
+    }
+
+    public long factorial(int n) {
+        if (n == 0)
+            return 1;
+        else
+            return(n * factorial(n-1));
     }
 }

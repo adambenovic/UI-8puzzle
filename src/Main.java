@@ -12,11 +12,12 @@ public class Main {
     public static void main(String[] args) {
         Main solver = new Main();
 
-        solver.run(args[0], args[1], args[2], args[3]);
+        solver.run(args[0], args[1], args[2], args[3], args[4]);
     }
 
-    public void run(String startFile, String finishFile, String solutionFile, String heuristic)
+    public void run(String startFile, String finishFile, String solutionFile, String heuristic, String timeLimit)
     {
+        int limit = Integer.parseInt(timeLimit);
         IO io = new IO();
         ArrayList<Puzzle> starts = io.loadFromFile(startFile);
         ArrayList<Puzzle> finishes = io.loadFromFile(finishFile);
@@ -40,7 +41,7 @@ public class Main {
                 System.exit(Enum.EXIT_INVALID_HEURISTIC);
         }
 
-        solutions = solver.solve(starts, finishes);
+        solutions = solver.solve(starts, finishes, limit);
         io.writeToFile(solutions, solutionFile);
     }
 }
