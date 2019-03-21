@@ -1,4 +1,7 @@
+import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 public class GreedyBestFirstSearch implements ISolver {
@@ -8,12 +11,13 @@ public class GreedyBestFirstSearch implements ISolver {
         this.heuristic = heuristic;
     }
 
-    public ArrayList<Solution> solve(ArrayList<Puzzle> starts, ArrayList<Puzzle> finishes) {
+    public ArrayList<Solution> solve(ArrayList<Puzzle> starts, ArrayList<Puzzle> finishes, int timeLimit) {
         ArrayList<Solution> solutions = new ArrayList<>();
         ArrayList<Puzzle> statesVisited;
         LinkedList<Puzzle> statesQueue;
         Puzzle start, finish, current;
-        long startTime, finishTime;
+        long startTime, finishTime, currentTime;
+        long limit = timeLimit * 1000;
 
         for(int i = 0; i < starts.size(); i++) {
             start = starts.get(i);
@@ -25,13 +29,13 @@ public class GreedyBestFirstSearch implements ISolver {
             ArrayList<Puzzle> currentNextStates ;
             statesQueue.offer(start);
             startTime = System.nanoTime();
-            boolean isSolution = false, visited,
-                    solvable = this.isSolvable(start);
-            long fact = factorial((start.getHeight() * start.getWidth()));
-            System.out.println(fact);
+            boolean isSolution = false, visited;
+            //solvable = this.isSolvable(start);
+            BigInteger totalStates = factorial(BigInteger.valueOf(start.getWidth() * start.getHeight()));
 
-            while(!statesQueue.isEmpty() && solvable) {
+            while(!statesQueue.isEmpty()) { //&& solvable
                 current = statesQueue.poll();
+                current.setKey();
 
                 if(current.isEqual(finish)) {
                     isSolution = true;
@@ -42,6 +46,7 @@ public class GreedyBestFirstSearch implements ISolver {
 
                 for(int j = 0; j < currentNextStates.size(); j++) {
                     Puzzle nextState = currentNextStates.get(j);
+                    nextState.setKey();
                     visited = false;
 
                     for(Puzzle temp : statesVisited) {
@@ -73,17 +78,19 @@ public class GreedyBestFirstSearch implements ISolver {
                     }
                 }
 
-                statesVisited.add(current);
-                statesQueue.remove(current);
+                currentTime = (System.nanoTime() - startTime) / 1000000;
 
-                    System.out.println(statesVisited.size());
-                if(statesVisited.size() >= fact){
+                if(currentTime > limit || totalStates.compareTo(BigInteger.valueOf(statesVisited.size())) <= 0){
                     isSolution = false;
                     break;
                 }
+
+                statesVisited.add(current);
+                statesQueue.remove(current);
             }
 
             finishTime = System.nanoTime();
+            System.out.println("States visited " + statesVisited.size());
 
             if(isSolution) {
                 boolean isPath = false;
@@ -97,12 +104,17 @@ public class GreedyBestFirstSearch implements ISolver {
                         isPath = true;
                 }
                 solution.setTimes(startTime, finishTime);
+                solution.setVisited(statesVisited.size());
                 System.out.print("Solution no." + (i+1) + " found.");
                 System.out.println(" Duration: " + solution.getRunTime() + "ms");
                 solutions.add(solution);
             }
             else {
                 System.out.println("Solution for puzzle no." + (i + 1) + " does not exist");
+                Solution solution = new Solution();
+                solution.setTimes(startTime, finishTime);
+                solution.setVisited(statesVisited.size());
+                solutions.add(solution);
             }
         }
 
@@ -117,18 +129,24 @@ public class GreedyBestFirstSearch implements ISolver {
             return true;
 
         int[][] map = puzzle.getMap();
-        for (int i = 0; i < height; i++)
-            for (int j = i + 1; j < width; j++)
+        for (int i = 0; i < height; i++) {
+            for (int j = i + 1; j < width; j++) {
                 if (map[j][i] != 0 && map[j][i] > map[i][j])
                     count++;
+            }
+        }
 
         return (count % 2 == 0);
     }
 
-    public long factorial(int n) {
-        if (n == 0)
-            return 1;
-        else
-            return(n * factorial(n-1));
+    public BigInteger factorial(BigInteger n) {
+        if (n.compareTo(BigInteger.ZERO) == 0)
+            return BigInteger.ONE;
+        else {
+            BigInteger x = n.subtract(BigInteger.ONE);
+            x = n.multiply(factorial(x));
+            return(x);
+        }
+
     }
 }

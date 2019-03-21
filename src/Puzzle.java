@@ -1,5 +1,6 @@
 import javax.swing.plaf.synth.SynthTextAreaUI;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Puzzle {
     private int height;
@@ -9,16 +10,15 @@ public class Puzzle {
     private int zeroColumn;
     private Puzzle previous;
     private ArrayList<Puzzle> next;
-    private String lastOperator;
-    private int depth;
-    private int priceSoFar;
+    private int lastOperator;
     private int priceToFinish;
+    private String key;
 
     public Puzzle() {
 
     }
 
-    public Puzzle(Puzzle previous, String operator) {
+    public Puzzle(Puzzle previous, int operator) {
         this.height = previous.getHeight();
         this.width = previous.getWidth();
         this.zeroRow = previous.getZeroRow();
@@ -26,6 +26,7 @@ public class Puzzle {
         this.previous = previous;
         this.lastOperator = operator;
         this.next = null;
+        this.key = null;
         this.map = new int[this.height][this.width];
         for(int i = 0; i < this.height; i++) {
             for(int j = 0; j < this.width; j++)
@@ -38,28 +39,36 @@ public class Puzzle {
 
         this.next = new ArrayList<>();
 
-        up = new Puzzle(this, "up");
-        if (up.move(Enum.UP)) {
-            up.setPriceToFinish(heuristic.calculate(up, finish));
-            this.next.add(up);
+        if(this.lastOperator != Enum.DOWN) {
+            up = new Puzzle(this, Enum.UP);
+            if (up.move(Enum.UP)) {
+                up.setPriceToFinish(heuristic.calculate(up, finish));
+                this.next.add(up);
+            }
         }
 
-        left = new Puzzle(this, "left");
-        if (left.move(Enum.LEFT)) {
-            left.setPriceToFinish(heuristic.calculate(left, finish));
-            this.next.add(left);
+        if(this.lastOperator != Enum.RIGHT) {
+            left = new Puzzle(this, Enum.LEFT);
+            if (left.move(Enum.LEFT)) {
+                left.setPriceToFinish(heuristic.calculate(left, finish));
+                this.next.add(left);
+            }
         }
 
-        right = new Puzzle(this, "right");
-        if (right.move(Enum.RIGHT)) {
-            right.setPriceToFinish(heuristic.calculate(right, finish));
-            this.next.add(right);
+        if(this.lastOperator != Enum.LEFT) {
+            right = new Puzzle(this, Enum.RIGHT);
+            if (right.move(Enum.RIGHT)) {
+                right.setPriceToFinish(heuristic.calculate(right, finish));
+                this.next.add(right);
+            }
         }
 
-        down = new Puzzle(this, "down");
-        if (down.move(Enum.DOWN)) {
-            down.setPriceToFinish(heuristic.calculate(down, finish));
-            this.next.add(down);
+        if(this.lastOperator != Enum.UP) {
+            down = new Puzzle(this, Enum.DOWN);
+            if (down.move(Enum.DOWN)) {
+                down.setPriceToFinish(heuristic.calculate(down, finish));
+                this.next.add(down);
+            }
         }
 
         return this.next;
@@ -189,28 +198,12 @@ public class Puzzle {
         this.next = next;
     }
 
-    public String getLastOperator() {
+    public int getLastOperator() {
         return lastOperator;
     }
 
-    public void setLastOperator(String lastOperator) {
+    public void setLastOperator(int lastOperator) {
         this.lastOperator = lastOperator;
-    }
-
-    public int getDepth() {
-        return depth;
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
-    public int getPriceSoFar() {
-        return priceSoFar;
-    }
-
-    public void setPriceSoFar(int priceSoFar) {
-        this.priceSoFar = priceSoFar;
     }
 
     public int getPriceToFinish() {
@@ -219,5 +212,14 @@ public class Puzzle {
 
     public void setPriceToFinish(int priceToFinish) {
         this.priceToFinish = priceToFinish;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey() {
+        if(this.key == null)
+            this.key = Integer.toString(Arrays.hashCode(this.map));
     }
 }

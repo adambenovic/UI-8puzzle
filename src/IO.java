@@ -67,10 +67,8 @@ class IO {
 
         state.setPrevious(null);
         state.setPriceToFinish(0);
-        state.setPriceSoFar(0);
-        state.setLastOperator(null);
+        state.setLastOperator(0);
         state.setNext(null);
-        state.setDepth(1);
 
 
         return state;

@@ -5,6 +5,7 @@ public class Solution {
     private long finishTime;
     private long runTime;
     private ArrayList<Puzzle> states;
+    private long visited;
 
     public Solution() {
         this.states = new ArrayList<>();
@@ -46,5 +47,13 @@ public class Solution {
 
     public void setStates(ArrayList<Puzzle> states) {
         this.states = states;
+    }
+
+    public long getVisited() {
+        return visited;
+    }
+
+    public void setVisited(long visited) {
+        this.visited = visited;
     }
 }
